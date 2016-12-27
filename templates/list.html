@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>AWS Instance Search</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="static/css/jumbotron-narrow.css" rel="stylesheet">
+
+    <script src="static/js/angular.js"></script>
+
+    <script>
+        angular.module('myApp', [])
+            .controller('HomeCtrl', function($scope, $http) {
+				$scope.info = {};
+				$scope.status = "Ready"
+				
+				$scope.showAdd = true;
+				console.log("Retrieving list of regions from Amazon...");
+			
+				$scope.showlist = function(){
+					$http({
+						method: 'POST',
+						url: '/getRegions',
+
+					}).then(function(response) {
+						var temp = response.data
+						var empty = {}
+						for(index = 0, len = temp.length; index < len; index++) {
+							empty[temp[index]] = false;
+						}
+						$scope.regions = empty;
+					}, function(error) {
+						console.log(error);
+					});
+				}
+
+
+				$scope.showAddPopUp = function(){
+					$scope.showAdd = true;
+					$scope.info = {};
+					$('#addPopUp').modal('show')
+				}
+			
+				$scope.confirmDelete = function(id){
+					$scope.deleteMachineId = id;
+					$('#deleteConfirm').modal('show');
+				}
+
+				$scope.makeQuery = function(){
+					$scope.status = "Loading...";
+					$http({
+						method: 'POST',
+						url: '/makeQuery',
+						data: {regions:$scope.regions, secret_id:$scope.secret_id, access_key:$scope.access_key}
+					}).then(function(response) {
+						console.log(response);
+						$scope.results = response.data.results
+						$scope.status = response['data']['message'];
+
+					}, function(error) {
+						console.log(error);
+					});
+				}
+				
+				$scope.showlist();
+            })
+    </script>
+
+
+</head>
+
+<body ng-controller="HomeCtrl">
+
+    <div class="container">
+        <div class="header clearfix">
+            <nav>
+                <ul class="nav nav-pills pull-right">
+                    <li role="presentation" class="active"><a href="#" data-toggle="modal" ng-click="showAddPopUp()" >New Query</a></li>
+                </ul>
+            </nav>
+            <h3 class="text-muted">AWS Image Search</h3>
+        </div>
+        <div class="bs-example" data-example-id="panel-without-body-with-table">
+            <div class="panel panel-default" ng-repeat="(key, result) in results">
+                <div class="panel-heading">{{'{{key}}'}}</div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Image ID</th>
+                            <th>Image Name</th>
+                            <th>State</th>
+                            <th>Key Name</th>
+                            <th>Public DNS name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="(id, instance) in result track by $index">
+                            <th scope="row">{{'{{$index+1}}'}}</th>
+                            <td>{{ '{{id}}' }}</td>
+                            <td>{{ '{{instance.image_id}}' }}</td>
+                            <td> {{'{{instance._state}}'}}</td>
+                            <td>{{'{{instance.key_name}}'}}</td>
+                            <td>{{'{{instance.public_dns_name}}'}}</td>
+                        </tr>
+                       
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="exampleModalLabel" >Instance Search</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="txtDevice" class="control-label">AWS Secret ID:</label>
+                            <input type="text" class="form-control" ng-model="secret_id" id="txtDevice">
+                        </div>
+                        <div class="form-group">
+                            <label for="txtIP" class="control-label">AWS Secret Access Key:</label>
+                            <input type="text" class="form-control" ng-model="access_key" id="txtIP">
+                        </div>
+                        <div class="form-group">
+                            <label for="txtIP" class="control-label">Select Regions:</label>
+                            <br>
+	                        <span ng-repeat="(region, enabled) in regions">
+	                    	<input type="checkbox" ng-model="regions[region]"> {{ '{{region}}' }}
+	                        </span>
+                        </div>
+
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                	<p>{{ '{{status}}' }}</p>
+                    <button type="button"  class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button ng-show="showAdd" id="btnAdd" ng-click="selectAll()" type="button" class="btn btn-primary">Select All Regions</button>
+                    <button ng-show="showAdd" id="btnAdd" ng-click="makeQuery()" type="button" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>
