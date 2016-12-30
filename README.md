@@ -14,6 +14,8 @@ You will need your environment variables set for AWS CLI use:
 $ export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 $ export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 ```
+Run the mongo server using the command appropriate to your operating system from port localhost: port 27017 (mongod)
+
 Run the server using 
 ```
 python app.py
