@@ -1,5 +1,7 @@
 # AWS-Instance-Query
 
+(Optional but recommended) Create a virtual environment using the instructions provided here http://docs.python-guide.org/en/latest/dev/virtualenvs/
+
 ## Installation and Setup
 Run
 ```
