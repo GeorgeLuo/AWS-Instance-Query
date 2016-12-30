@@ -23,58 +23,70 @@
     <script>
         angular.module('myApp', [])
             .controller('HomeCtrl', function($scope, $http) {
-				$scope.info = {};
-				$scope.status = "Ready"
-				
-				$scope.showAdd = true;
-				console.log("Retrieving list of regions from Amazon...");
-			
-				$scope.showlist = function(){
-					$http({
-						method: 'POST',
-						url: '/getRegions',
+                $scope.info = {};
+                $scope.status = "Ready"
+                
+                $scope.showAdd = true;
+                console.log("Retrieving list of regions from Amazon...");
+            
+                $scope.showlist = function(){
+                    $http({
+                        method: 'POST',
+                        url: '/getRegions',
 
-					}).then(function(response) {
-						var temp = response.data
-						var empty = {}
-						for(index = 0, len = temp.length; index < len; index++) {
-							empty[temp[index]] = false;
-						}
-						$scope.regions = empty;
-					}, function(error) {
-						console.log(error);
-					});
-				}
+                    }).then(function(response) {
+                        var temp = response.data
+                        var empty = {}
+                        for(index = 0, len = temp.length; index < len; index++) {
+                            empty[temp[index]] = false;
+                        }
+                        $scope.regions = empty;
+                    }, function(error) {
+                        console.log(error);
+                    });
+                }
 
+                $scope.initializeQuery = function(){
+                    $http({
+                        method: 'POST',
+                        url: '/initializeQuery',
+                    }).then(function(response) {
+                        console.log(response.data.results)
+                        $scope.results = response.data.results
+                    }, function(error) {
+                        console.log(error);
+                    });
+                }
 
-				$scope.showAddPopUp = function(){
-					$scope.showAdd = true;
-					$scope.info = {};
-					$('#addPopUp').modal('show')
-				}
-			
-				$scope.confirmDelete = function(id){
-					$scope.deleteMachineId = id;
-					$('#deleteConfirm').modal('show');
-				}
+                $scope.showAddPopUp = function(){
+                    $scope.showAdd = true;
+                    $scope.info = {};
+                    $('#addPopUp').modal('show')
+                }
+            
+                $scope.confirmDelete = function(id){
+                    $scope.deleteMachineId = id;
+                    $('#deleteConfirm').modal('show');
+                }
 
-				$scope.makeQuery = function(){
-					$scope.status = "Loading...";
-					$http({
-						method: 'POST',
-						url: '/makeQuery',
-						data: {regions:$scope.regions, secret_id:$scope.secret_id, access_key:$scope.access_key}
-					}).then(function(response) {
-						console.log(response);
-						$scope.results = response.data.results
-						$scope.status = response['data']['message'];
+                $scope.makeQuery = function(){
+                    $scope.status = "Loading...";
+                    $http({
+                        method: 'POST',
+                        url: '/makeQuery',
+                        data: {regions:$scope.regions, secret_id:$scope.secret_id, access_key:$scope.access_key}
+                    }).then(function(response) {
+                        console.log(response);
+                        $scope.results = response.data.results
+                        $scope.status = response['data']['message'];
 
-					}, function(error) {
-						console.log(error);
-					});
-				}
-				
-				$scope.showlist();
+                    }, function(error) {
+                        console.log(error);
+                    });
+                }
+                
+                $scope.showlist();
+                $scope.initializeQuery();
             })
     </script>
 
@@ -142,16 +154,16 @@
                         <div class="form-group">
                             <label for="txtIP" class="control-label">Select Regions:</label>
                             <br>
-	                        <span ng-repeat="(region, enabled) in regions">
-	                    	<input type="checkbox" ng-model="regions[region]"> {{ '{{region}}' }}
-	                        </span>
+                            <span ng-repeat="(region, enabled) in regions">
+                            <input type="checkbox" ng-model="regions[region]"> {{ '{{region}}' }}
+                            </span>
                         </div>
 
                     </form>
 
                 </div>
                 <div class="modal-footer">
-                	<p>{{ '{{status}}' }}</p>
+                    <p>{{ '{{status}}' }}</p>
                     <button type="button"  class="btn btn-default" data-dismiss="modal">Close</button>
                     <button ng-show="showAdd" id="btnAdd" ng-click="selectAll()" type="button" class="btn btn-primary">Select All Regions</button>
                     <button ng-show="showAdd" id="btnAdd" ng-click="makeQuery()" type="button" class="btn btn-primary">Search</button>
